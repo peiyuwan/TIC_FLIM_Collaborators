@@ -190,7 +190,11 @@ plot(G1_pro,S1_pro,'x');
 
 Free_portion_1 = (G1_pro-G1_inter(1))/(G1_inter(2)-G1_inter(1));
 
-
+figure
+histogram(Free_portion_1);
+%% N: The histogram counts of the pixels projected onto the regression
+edges_vect = [0:0.01:1];
+N= histcounts(Free_portion_1,edges_vect);
 %%
 % 
 % %%Phsor Center Analysis
