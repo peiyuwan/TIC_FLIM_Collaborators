@@ -1,8 +1,15 @@
 %% Ploting pixels selected on the phasor map back to the original map;
 % Peiyu Wang
-% Updated: 07/01/2020
+% Updated: 07/03/2020
 
-function [mask,phase_selected] = PhasorToPlotFree(org_ref)
+% Input: org_ref: A lifetime refstack for processed Leica lifetime file
+% Ouput: final_mask: A 3D stack of output files. Each z layer is on output
+%        of the original intensity image that has the specified lifetime
+%        final_phasor: Phasor selected. It is displayed as a
+%        2*len(original) image. 
+                       
+
+function [final_mask,final_phasor] = PhasorToPlotFree(org_ref)
 
 figure
 set(gcf, 'units','normalized','outerposition',[0 0 1 1]);
@@ -31,7 +38,7 @@ phasor_his(max_Idx) = 0;
 phasor_his = flip(phasor_his);
 subplot(1,2,2)
 imagesc(phasor_his);
-colormap jet; colorbar; axis image; caxis([0 150])
+colormap jet; colorbar; axis image; caxis([0 50])
 
 x_circle     = [map_res/2:map_res];
 y_circle_pos = map_res/2-floor(sqrt((map_res/4)^2-((x_circle-map_res/2)-map_res/4).^2));
@@ -57,9 +64,14 @@ plot_color = ['r','m','g','c','y','w'];
 
 judge = 1;
 %%
+
 final_mask = zeros(size(org_ref.int,1),size(org_ref.int,2));
 final_phasor = zeros(size(phasor_his));
 color_idx = 1;
+mask_idx = 1;
+
+current_mask = zeros(size(org_ref.int,1),size(org_ref.int,2));
+current_phasor = zeros(size(phasor_his));
 while judge == 1
     
     subplot(1,2,2);
@@ -75,7 +87,7 @@ while judge == 1
     
     
      
-    mask = zeros(size(org_ref.int,1),size(org_ref.int,2));
+    add_mask = zeros(size(org_ref.int,1),size(org_ref.int,2));
     
     for i = 1: size(org_ref.int,1)
         for j = 1: size(org_ref.int,2)
@@ -89,7 +101,7 @@ while judge == 1
 
             if phase_selected(S_index,G_index)==1
 
-                mask(i,j) = 1;
+                add_mask(i,j) = 1;
                 
             end
         end
@@ -97,22 +109,37 @@ while judge == 1
     
     subplot(1,2,1);
     hold on;
-    mask_plot = plot(fix(find(mask == 1)/size(mask,1)),rem(find(mask==1),size(mask,1)),'color',plot_color(color_idx),'Marker','.','LineStyle','none');
+    mask_plot = plot(fix(find(add_mask == 1)/size(add_mask,1)),rem(find(add_mask==1),size(add_mask,1)),'color',plot_color(color_idx),'Marker','.','LineStyle','none');
     
     promptMessage = "Add Another Region?";
     button = questdlg(promptMessage, 'Next?', ...
         'Add', 'Add Color','Done(with this round)',...
-        'Redo');
+        'Add');
     if strcmp(button, 'Done(with this round)')
-        final_mask(mask == 1) = 1;
-        final_phasor(phase_selected==1) = 1;
+        current_mask(add_mask == 1) = 1;
+        current_phasor(flip(phase_selected)==1) = 1;
+        
+        final_mask(:,:,mask_idx) = current_mask;
+        final_phasor(:,:,mask_idx) = current_phasor;
+        
         judge = 0;
     elseif strcmp(button, 'Add')
-        final_mask(mask == 1) = 1;
-        final_phasor(phase_selected==1) = 1;
+        current_mask(add_mask == 1) = 1;
+        current_phasor(flip(phase_selected)==1) = 1;
     else
-        final_mask(mask == 1) = 1;
-        final_phasor(phase_selected==1) = 1;
+        current_mask(add_mask == 1) = 1;
+        current_phasor(flip(phase_selected)==1) = 1;
+        
+        final_mask(:,:,mask_idx) = current_mask;
+        final_phasor(:,:,mask_idx) = current_phasor;
+        
+        current_mask = zeros(size(org_ref.int,1),size(org_ref.int,2));
+        current_phasor = zeros(size(phasor_his));
+        
+        final_mask = cat(3,final_mask,current_mask); 
+        final_phasor= cat(3,final_phasor,current_phasor);
+  
+        mask_idx = mask_idx+1;
         
         color_idx = color_idx+1;
         if color_idx > numel(plot_color)
