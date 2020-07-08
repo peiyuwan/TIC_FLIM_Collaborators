@@ -113,7 +113,12 @@ for z = 1: z_stacks
 end
 
 %% Testing of the mask
-% test_img = imread(fullfile(mask_folder,'001_z0_mask.tif'));
-% figure
-% imagesc(test_img(:,:,1));
+% Please update '001_z0_mask.tif' with the name of the mask file, and the
+% number 3 with the layer of mask you want to see. 
+
+file_name = '001_z0_mask.tif';
+selected_mask = 3; 
+test_img = imread(fullfile(mask_folder,file_name),selected_mask);
+figure
+imagesc(test_img(:,:,1));
 
