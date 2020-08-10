@@ -16,7 +16,7 @@ set(gcf, 'units','normalized','outerposition',[0 0 1 1]);
 
 subplot(1,2,1)
 imagesc(org_ref.int)
-colorbar; axis image;
+colorbar; axis image;colormap(gca,gray);
 
 map_res = size(org_ref.int,1)*2;
 phasor_his = zeros(map_res,map_res);
@@ -38,7 +38,8 @@ phasor_his(max_Idx) = 0;
 phasor_his = flip(phasor_his);
 subplot(1,2,2)
 imagesc(phasor_his);
-colormap jet; colorbar; axis image; caxis([0 50])
+colormap(gca,jet); colorbar; axis image; caxis('auto');
+ax=gca; ax.Colormap(1,:) = [1,1,1];
 
 x_circle     = [map_res/2:map_res];
 y_circle_pos = map_res/2-floor(sqrt((map_res/4)^2-((x_circle-map_res/2)-map_res/4).^2));
@@ -75,14 +76,9 @@ current_phasor = zeros(size(phasor_his));
 while judge == 1
     
     subplot(1,2,2);
-    H=drawfreehand('color',plot_color(color_idx),'closed',true,'Linewidth',1);
+    H=drawfreehand('color',plot_color(color_idx),'closed',true,'Linewidth',1,'FaceAlpha',0.3);
     phase_selected = H.createMask;
-
-    
-    subplot(1,2,2);
-    hold on;
-    add_plot = plot(fix(find(phase_selected == 1)/size(phase_selected,1)),rem(find(phase_selected == 1),size(phase_selected,1)),'color',plot_color(color_idx),'Marker','.');
-    
+   
     phase_selected = flip(phase_selected);
     
     
@@ -109,12 +105,13 @@ while judge == 1
     
     subplot(1,2,1);
     hold on;
-    mask_plot = plot(fix(find(add_mask == 1)/size(add_mask,1)),rem(find(add_mask==1),size(add_mask,1)),'color',plot_color(color_idx),'Marker','.','LineStyle','none');
+    mask_plot = plot(fix(find(add_mask == 1)/size(add_mask,1)),rem(find(add_mask==1),size(add_mask,1)),...
+        'color',plot_color(color_idx),'Marker','.','LineStyle','none','MarkerSize',3);
     
     promptMessage = "Add Another Region?";
     button = questdlg(promptMessage, 'Next?', ...
-        'Add', 'Add Color','Done(with this round)',...
-        'Add');
+        'Redo', 'Add Color','Done(with this round)',...
+        'Redo');
     if strcmp(button, 'Done(with this round)')
         current_mask(add_mask == 1) = 1;
         current_phasor(flip(phase_selected)==1) = 1;
@@ -123,9 +120,9 @@ while judge == 1
         final_phasor(:,:,mask_idx) = current_phasor;
         
         judge = 0;
-    elseif strcmp(button, 'Add')
-        current_mask(add_mask == 1) = 1;
-        current_phasor(flip(phase_selected)==1) = 1;
+    elseif strcmp(button, 'Redo')
+        delete(mask_plot);
+        delete(H);
     else
         current_mask(add_mask == 1) = 1;
         current_phasor(flip(phase_selected)==1) = 1;

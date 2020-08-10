@@ -5,7 +5,7 @@
 
 function plotPhasorSpecFast(org_ref)
 
-map_res = 512; 
+map_res = 2*size(org_ref.int,1); 
 phasor_his = zeros(map_res,map_res);
 
 for i = 1:size(org_ref.int,1)

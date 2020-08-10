@@ -108,7 +108,7 @@ while judge == 1
     promptMessage = "Add Another Region?";
     button = questdlg(promptMessage, 'Next?', ...
         'Redo', 'Add Color','Done(with this round)',...
-        'Add');
+        'Redo');
     if strcmp(button, 'Done(with this round)')
         final_mask(:,:,mask_idx) = mask;
         final_phasor(:,:,mask_idx) = phase_selected;
