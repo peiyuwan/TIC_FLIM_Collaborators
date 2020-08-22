@@ -1,6 +1,6 @@
 %% Generate Mask For ROI plots
 % Peiyu Wang
-% 07/05/2020
+% 08/20/2020
 
 % Mask is generated for the exported Leica Falcon Lifetime image. The masks
 % will be stored under a different folder with name "ROI_Mask", with the
@@ -13,6 +13,8 @@
 % Expected exportion method: Tiff Files, with Fast FLim included
 
 close all; clear all;
+
+addpath(fullfile(pwd,'Functions'))
 %% Hyper Parameters
 % Please adjust the following parameters according to your needs
 
@@ -35,6 +37,8 @@ tagstruct.PlanarConfiguration = Tiff.PlanarConfiguration.Chunky;
 %% Data Read in
 
 imageFile = dir(fullfile(DataFolder,'*.tif'));
+z_stacks = numel(imageFile)/detector_No/4;
+
 
 mask_folder = fullfile(DataFolder,'ROI_Mask');
 if ~exist(mask_folder,'dir')
@@ -43,6 +47,46 @@ end
 
 if detector_No<3;channel_con = '%01d';
 else;channel_con = '%02d';end
+
+figure;set(gcf, 'units','normalized','outerposition',[0 0 1 1]);
+int = imread(fullfile(DataFolder,imageFile(1).name));
+G = standardPhase(imread(fullfile(DataFolder,imageFile(3).name)));
+S = standardPhase(imread(fullfile(DataFolder,imageFile(4).name)));
+current_struct = struct('int',int,'G',G,'S',S);
+red_map = cat(3,ones(size(int)),zeros(size(int))...
+        ,zeros(size(int)));
+subplot(1,2,1); imagesc(current_struct.int); axis image; colorbar; colormap jet;
+ax = gca; ax.Colormap(1,:)=[0,0,0];
+while 1
+   thresh_struct = current_struct;
+   low_thresh = input("Please input lower threshold: ");
+   up_thresh = input("Please input upper threshold: ");
+   thresh_struct.int((current_struct.int < low_thresh) | (current_struct.int > up_thresh)) = 0;
+   thresh_struct.G((current_struct.int < low_thresh) | (current_struct.int > up_thresh)) = 0;
+   thresh_struct.S((current_struct.int < low_thresh) | (current_struct.int > up_thresh)) = 0;
+   subplot(1,2,1);
+   hold on; 
+   h = imshow(red_map);
+   color_int = double(thresh_struct.int);
+   color_int(thresh_struct.int~=0) = 0.8;
+   set(h, 'AlphaData',  color_int);
+   subplot(2,2,2); plotPhasorFast(medfiltPhasorFast(current_struct));title('Before Threshold')
+   subplot(2,2,4); plotPhasorFast(medfiltPhasorFast(thresh_struct));title('After Threshold')
+   
+   promptMessage = "Reselect Thresholds?";
+   button = questdlg(promptMessage, 'Next?','Yes','No','Yes');
+   if strcmp(button, 'No')
+       break
+   else
+       delete(h);
+   end
+end
+
+filename = 'Parameters.xlsx';
+writecell({'Upper Threshold','Lower_threshold'},fullfile(mask_folder,filename),'Sheet',1,'Range','A1');
+writematrix([up_thresh,low_thresh],fullfile(mask_folder,filename),'Sheet',1,'Range','A2');
+
+
 figure;
 set(gcf,'units','normalized','outerposition',[0 0 1 1]);
 for z = 1: z_stacks
@@ -61,7 +105,9 @@ for z = 1: z_stacks
             
             org_img = imread(fullfile(DataFolder,imageFile(k).name));
             partial_name = regexp(imageFile(k).name, '\w*_z\w*_', 'match');
+            org_img((org_img < low_thresh) | (org_img > up_thresh)) = 0;
             imagesc(org_img); axis image; colormap jet; colorbar;
+            ax = gca; ax.Colormap(1,:)=[0,0,0];
             
             hold on;
             color_idx = 1; mask_idx = 1;
@@ -69,11 +115,12 @@ for z = 1: z_stacks
             current_mask = zeros(size(org_img,1),size(org_img,2));
             final_mask = zeros(size(org_img,1),size(org_img,2));
             while 1
+                
                 title(["Image: "+ partial_name+", Mask No.: "+num2str(mask_idx)]);
                 H=drawfreehand('color',plot_color(color_idx),'closed',true,'Linewidth',1);
+                pause
                 add_mask = H.createMask;
-                
-%                 mask_plot = plot(fix(find(add_mask == 1)/size(add_mask,1)),rem(find(add_mask == 1),size(add_mask,1)),'color',plot_color(color_idx),'Marker','.','LineStyle','none');
+                %                 mask_plot = plot(fix(find(add_mask == 1)/size(add_mask,1)),rem(find(add_mask == 1),size(add_mask,1)),'color',plot_color(color_idx),'Marker','.','LineStyle','none');
                 button = questdlg("Add Another Region?", 'Next?', ...
                     'Add to Current Mask', 'Add Another Mask','Done(with this round)',...
                     'Add to Current Mask');
@@ -117,8 +164,8 @@ end
 % number 3 with the layer of mask you want to see. 
 
 file_name = '001_z0_mask.tif';
-selected_mask = 3; 
+selected_mask = 1; 
 test_img = imread(fullfile(mask_folder,file_name),selected_mask);
 figure
-imagesc(test_img(:,:,1));
+imagesc(test_img(:,:,1));axis image;
 
