@@ -75,12 +75,7 @@ while 1
    promptMessage = "Reselect Thresholds?";
    button = questdlg(promptMessage, 'Next?','Yes','No','Yes');
    if strcmp(button, 'No')
-       for z = 1: z_stacks
-           ref_stack{z,1}.int((ref_stack{z,1}.int < low_thresh) | (ref_stack{z,1}.int > up_thresh)) = 0;
-           ref_stack{z,1}.G((ref_stack{z,1}.int < low_thresh) | (ref_stack{z,1}.int > up_thresh)) = 0;
-           ref_stack{z,1}.S((ref_stack{z,1}.int < low_thresh) | (ref_stack{z,1}.int > up_thresh)) = 0;
-       end    
-       break
+      break
    end 
 end
 
