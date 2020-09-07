@@ -40,7 +40,8 @@ xticklabels({'-1','-0.75','-0.5','-0.25','0','0.25','0.5','0.75','1'});
 yticks([0:map_res/8:map_res]);
 yticklabels({'1','0.75','0.5','0.25','0','-0.25','-0.5','-0.75','-1'});
 
-plotRadialGrid(map_res); 
+plotRadialGrid(map_res);
+xlabel('G');ylabel('S');
 hold off;
 end
 

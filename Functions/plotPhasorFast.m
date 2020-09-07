@@ -24,7 +24,7 @@ end
 phasor_his(max_Idx) = 0;
 phasor_his = flip(phasor_his);
 imagesc(phasor_his)
-colormap jet; caxis('auto');
+colormap(gca,jet); ax = gca; ax.Colormap(1,:)= [1 1 1]; caxis('auto');
 colorbar; axis image;
 
 x_circle     = [map_res/2:map_res];
@@ -38,4 +38,5 @@ xticklabels({'0','0.125','0.25','0.375','0.5','0.625','0.75','0.875','1'});
 
 yticks([0:map_res/2^4:map_res/2]);
 yticklabels({'1','0.875','0.75','0.625','0.5','0.375','0.25','0.125','0'});
+xlabel('G');ylabel('S')
 end
