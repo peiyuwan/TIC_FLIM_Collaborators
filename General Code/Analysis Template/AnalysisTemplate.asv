@@ -125,7 +125,7 @@ for i = 3: numel(imageFolder)  % Looping through the different individual folder
     hold on;
     p3 = imshow(mask_map); set(p3, 'AlphaData',mask_img);
     p4 = imshow(current_map); set(p4, 'AlphaData',mask_img);
-    while 1     % Window drawing. 
+    while 1
         subplot(1,2,1)
         H=drawfreehand('color','m','closed',true,'Linewidth',2);
         
@@ -179,9 +179,7 @@ for i = 3: numel(imageFolder)  % Looping through the different individual folder
     subplot(2,2,3); plotPhasorFast(med_struct);  title("Median Filtered Phasor Plot")
     subplot(2,2,4); plotPhasorFast(nlm_struct);  title("CNLM Filtered Phasor Plot")
     
-    %% Thresholding FLIM Phasors based on NADH intensities
     
-    org_struct = threshPhasorStruct(org_struct,thresh_val);
     
     %% Analysis of the data based on masked structure.
     
