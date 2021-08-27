@@ -1,51 +1,91 @@
 %%  Analysis Template for FLIM data analysis
-%  Update: 08/24/2021
+%  Update: 08/27/2021
 %  Peiyu Wang
 
 %  This is a template matlab program for data analysis.
-%  Expected Data input: Exported GS files with Fast FLIM from Leica Falcon
-%  System.
-%  This program analyzes multiple layers; 
+%  Expected Data input: Exported GS files with from Leica Falcon System.
+%                       This program can analyze multiple z layers. 
+%                       Choose whether you have FastFLIM channel in the settings below
+%                       The exporting settings must be identical for all fields of view. 
 
-% Please do not put anything that is not the exported data in any
-% subfolders.
+%  Prerequisite: "Functions" folder from the TIC collaborator github repository
+%  Please put the Funtions folder parallel to this script.  
 
-%  This dataset had 2 fluorescence detector channels, which generate 8 output channels:
+
+%  IMPORTANT 
+%  Put all the exported data from one field of view (including all z layers if applicable) in a folder.  
+%  Then put all these folder containing different fields of views in a big folder.
+%  This folder containing all the field of views should be put parallel to the script. 
+
+
+%  The default folder structure should look like this: 
+
+% 
+% -> AnallysiTemplate.m
+% -> Functions
+% -> Data
+%   -> FOV1
+%   -> FOV2
+%   -> FOV3
+%      ->1_z0_ch0.tif
+%      ->1_z0_ch1.tif
+%      ->1_z0_ch2.tif
+%      ->1_z0_ch3.tif
+%      ->1_z1_ch0.tif
+%      ->1_z1_ch1.tif
+%      ->1_z1_ch2.tif
+%      ->1_z1_ch3.tif
+
+%  Please do not put any folders that are not fields of views in the Data Folder.  It will mess up the program if you do. 
+
+%  If you have the functions or data stored in a different folder, adjust
+%  the function path and the data folder position in the input variables below. 
+%  The data folder structure has to be the same as above mentioned, even if there is only one field of view. 
+
+%  The demo dataset had 2 fluorescence detector channels, which generate 8 output channels:
 %  First detector: SYTO59 staining dye.
 %  Second detector: NADH autofluroesence.
 
-%  The input also stored the Bright Field data in the BF file
-
+%  The also stores the Bright Field data in the BF folder inside each field of view. 
 
 %  Workflow anlaysis:
 %  Data input ->  Mask Generation -> Thresholding -> Filtering ->
 %  Metablic analysis based on masking -> data output.
 
-%  You can comment out entires sections if there are workflow precedures that you do not want.
+%  You can adjust the settings for workflow precedures that you want to include.
+%  Refer to the final sections for meanings of the columns in the excel
+%  sheet, or contact TIC member. 
 
-%  Prerequisite: Function folder from the TIC collaborator github repository
 
-close all; clear all;
+close all; clear all;   % Clearing all input variable and closing all windows from previous analysis
 
 addpath("Functions"); %Change the path name to the location of "Function",
-%or put "Function" folder on the folder as the matlab
-%script.
+                      %or put "Function" folder on the folder as the matlab
+                      %script.
 %% Input Variables
 
 dataFolder = "Data";  % dataFolder: location of the folder that contains Data.
-% Change to your folder where you store the data like:
-% dataFolder = "C:\User\20210823\Data"
-% Please do not put anything that is not the exported data in any
-% subfolders.
+                      % Change to your folder where you store the data like:
+                      % dataFolder = "C:\User\20210823\Data"
+                      % Please do not put anything that is not seperate filed of views in this folder
 
-NADH_dec = 2;         % The detector sequence (not the channel) for NADH.
-% NADH_dec depends on how many detector are activated before NADH is colected.
-% If one other detector was activated, and NADH was second detector, put 2.
-% Usually input as 1. For default dataset in script, as we have another dye collected beore NADH, therefore set as 2.
+NADH_dec = 1;         % The detector sequence (not the channel) for NADH. 
+                      % If you don't have other detectors activated, put 1 here. 
+                      % NADH_dec depends on how many detector are activated before NADH is colected.
+                      % If one other detector was activated, and NADH was second detector, put 2.
+                      % Usually input as 1. For default dataset in script, as we have another dye collected beore NADH, therefore set as 2.
 
-imageSize = 512;                        % Image Input Size
+imageSize = 512;                % Image Input Size
 
 Excel_file = 'Analysis.xlsx';   % Name of the excel file to store all the data. Do not omit the ".xlsx"
+
+FastFLIMChannel = 1;            % Indicate whether you have a fast FLIM channel exported or not. 
+
+total_detector = 1;   % Enter the number of detector used for the imaging setting, despite whether they will be used for analysis(T-PMT does not count)
+                      % Please mannually check whether the total number of tiff files in folder is : 
+                      % 4 *number of detectors * number of z stacks if FastFLIM is selected.
+                      % or 3 *number of detectors * number of z stacks if FastFLIM is not selected.
+
 %% Analysis procedures setup:
 % For all the procedures, if you want to include, assign varable as 1, if asign as 0.
 %% Masking Analysis
@@ -56,15 +96,15 @@ Excel_file = 'Analysis.xlsx';   % Name of the excel file to store all the data. 
 
 % Mask creation settings is included in the next procedures.  
 
-mask_analyzing = 1;      %If you wish to do analysis based on generated masks, asign mask_analyzing as 1, otherwise asign as 0. 
+mask_analyzing = 0;      %If you wish to do analysis based on generated masks, asign mask_analyzing as 1, otherwise asign as 0. 
 
 %% Mask creation procedure.
 % Masking based on another input image for the same field of view
 % Only do it if you have another image collected to generate the mask.
 % If not, select 0 for all settings. Only one of the three procedures recomended here. Set zeros for others. .
-batch_threshold_mask = 1;       % Batch thresholding for creating masks
-individual_threshold_mask = 1;  % individual thresholding for masks
-individual_draw_mask = 1;       % individual thresholding for masks.
+batch_threshold_mask = 0;       % Batch thresholding for creating masks
+individual_threshold_mask = 0;  % individual thresholding for masks
+individual_draw_mask = 0;       % individual thresholding for masks.
 
 
 %Additional Settings:
@@ -77,7 +117,7 @@ mask_thresh = 500;            % Set to your batch masking value if batch_thresho
 %  Recommend wavelet filtering when exporting the dataset.
 
 cnlm_filtering =  0;        % Correlated Non local Mean filetering: Warning: might take quite some time.
-med_filtering  =  1;         % Median fileting.
+med_filtering  =  0;         % Median fileting.
 
 
 %  Advanced settings:  Refer to functions scripts. Changing is not necessary
@@ -115,23 +155,24 @@ phasor_cen_calculating  =  0;  % To caluclaed phasor based on centroid, assign v
 
 z_analysis = 1;       %If you want to analyze based on different z, assign varable as 1, if not asign as 0
 
-total_detector = 2;   % Enter the number of detector used for the imaging setting.
-
-% Please mannually check whether the total number of tiff files in folder is : 4 *number of detectors * number of z stacks.
 
 %% Advanced Data Settings: Output summary image of the condition. 
 
-phasor_image = 1;             % Plot individual image for phasor plot before summarizing.
-phasor_original_image = 1;    % plot original phasor image bofore filtering and preprocessing the image. 
-summary_image = 1;            % plot summary image with phasor plot and intensity information. 
+phasor_image = 0;             % Plot individual image for phasor plot before summarizing.
+phasor_original_image = 0;    % plot original phasor image bofore filtering and preprocessing the image. 
+summary_image = 0;            % plot summary image with phasor plot and intensity information. 
  
-store_image = 1;              % Store the image inside the "Figures" folder. created.   
+store_image = 0;              % Store the image inside the "Figures" folder. created.   
 image_folder = "SavedFigures";     % Name of the figures folder.  All images will be stored in the figure folder. 
 
-close_image = 1;                % closing all images after each field of view: Highly recommended if you have many datasets. This let you store the sumary image above. 
-%%  Please do not modify code starting from here.
-%%  Please do not modify code starting from here.
-%%  Please do not modify code starting from here.
+close_image = 0;                % closing all images after each field of view
+                                %Highly recommended if you have many datasets. This let you store the sumary image above. 
+
+                                
+                                
+%%  *******************************  Please do not modify code starting from here.************************************
+%%  *********************Please do not modify code starting from here.***************************
+%%  *********Please do not modify code starting from here. *******************
 % Unless you are sure what you are doing, do not modify code. Contact TIC member to modify the code.
 
 %% Predifiniing variables.
@@ -147,10 +188,6 @@ else
     z_stack = 1;
 end
 
-batch_threshold_mask = 1;       % Batch thresholding for creating masks
-individual_threshold_mask = 0;  % individual thresholding for masks
-individual_draw_mask = 0;       % individual thresholding for masks.
-
 % Creat folder for saving images. 
 if store_image == 1
     if ~exist(image_folder,'dir')
@@ -160,14 +197,14 @@ end
 %% Error check
 % Checking if input setting is correct
 if phasor_mode_calculating + phasor_cen_calculating ~= 1
-    disp("Error in seeting phasor calculation mode, check Caluculate phaosr representative for phasor cluster! ")
+    disp("Error in seeting phasor calculation mode, check line 144 and 145! ")
     disp("Press Control + C to abort program! ")
     pause
 end
 
 
 if batch_threshold_mask + individual_threshold_mask + individual_draw_mask > 1
-    disp("Error in seting mask, check Caluculate phaosr representative for phasor cluster! ")
+    disp("Error in seting mask, check Mask Selection! ")
     disp("Press Control + C to abort program! ")
     pause
 end
@@ -193,17 +230,31 @@ for i = 3: numel(imageFolder)  % Looping through the different individual folder
     
     
     if z_analysis == 1
-        z_stack = numel(image_file)/4/total_detector;
+        if FastFLIMChannel == 1
+           z_stack = numel(image_file)/4/total_detector;
+        else
+           z_stack = numel(image_file)/3/total_detector;
+        end
+        disp(["Expected Total Z layer counts: " + num2str(z_stack)]);
     end
     
-    %  original mask image;
     
-    for z_cur = 1: z_stack
+    for z_cur = 1: z_stack  % z_stack = 1 if z_analysis is not selected. 
         
-        int = imread(fullfile(image_file(1).folder,image_file((z_cur-1)*4*total_detector+(NADH_dec-1)*4+1).name));
-        G = standardPhase( imread(fullfile(image_file(1).folder,image_file((z_cur-1)*4*total_detector+(NADH_dec-1)*4+3).name)));
-        S = standardPhase( imread(fullfile(image_file(1).folder,image_file((z_cur-1)*4*total_detector+(NADH_dec-1)*4+4).name)));
         
+        if FastFLIMChannel == 1
+            int = imread(fullfile(image_file(1).folder,image_file((z_cur-1)*4*total_detector+(NADH_dec-1)*4+1).name));
+            G = standardPhase( imread(fullfile(image_file(1).folder,image_file((z_cur-1)*4*total_detector+(NADH_dec-1)*4+3).name)));
+            S = standardPhase( imread(fullfile(image_file(1).folder,image_file((z_cur-1)*4*total_detector+(NADH_dec-1)*4+4).name)));
+        else
+            int = imread(fullfile(image_file(1).folder,image_file((z_cur-1)*3*total_detector+(NADH_dec-1)*3+1).name));
+            G = standardPhase( imread(fullfile(image_file(1).folder,image_file((z_cur-1)*3*total_detector+(NADH_dec-1)*3+2).name)));
+            S = standardPhase( imread(fullfile(image_file(1).folder,image_file((z_cur-1)*3*total_detector+(NADH_dec-1)*3+3).name)));
+        end
+        
+        if z_analysis == 1
+            disp(["Analyzing: Z = " + num2str(z_cur)]);
+        end
         %  Data read in for int, G, and S; If necessaryly, addjust this according to
         %  your detector number for NADH.
         
@@ -350,12 +401,12 @@ for i = 3: numel(imageFolder)  % Looping through the different individual folder
         % systm. You can also use the median filter or the CNLM filter provided in
         % here.
         
-        if phasor_original_image == 1 
+        if phasor_original_image == 1  % Display phasor image before filtering. 
             figure; 
             plotPhasorFast(org_struct);  title("Original Phasor plot")
         end
         
-        %%  Different filtering options. 
+        %  Different filtering options. 
         if cnlm_filtering == 1 % Correlated Non local Mean filetering: Warning: might take quite some time.
             org_struct = nlmfiltPhasor(org_struct, window_size, serch_size, average_coe); % Perform a nlm filting with a window size of 5, search window of 9, averaging level of 35
         end
@@ -366,13 +417,13 @@ for i = 3: numel(imageFolder)  % Looping through the different individual folder
         end
        
       
-        if phasor_image == 1
+        if phasor_image == 1    % Display phasor image after filtering
             figure; 
             plotPhasorFast(org_struct);  title("Filtered Phasor plot")
         end
         
         
-        if summary_image == 1
+        if summary_image == 1    % Display summary image of current z layer, photon intensity map and phasor plot. 
             figure; set(gcf, 'units','normalized','outerposition',[0 0 1 1]); 
             subplot(1,2,1); imagesc(org_struct.int);  colorbar; colormap(gca,"hot"); axis image; 
             axis off; title("Intensity map"); set(gca,"FontSize",10);
@@ -381,12 +432,12 @@ for i = 3: numel(imageFolder)  % Looping through the different individual folder
         end
         
         
-        if store_image == 1
+        if store_image == 1       % Whether to store the displayed image.. 
             saveas(gcf,fullfile(image_folder,[imageFolder(i).name+"_z"+num2str(z_cur)+".tif"])); 
         end
         
         
-        if close_image == 1   
+        if close_image == 1     
             close all;
         end
                 
