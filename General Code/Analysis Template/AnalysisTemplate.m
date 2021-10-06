@@ -1,5 +1,5 @@
-%%  Analysis Template for FLIM data analysis
-%  Update: 08/27/2021
+%%  Analysis Template for FLIM data analysis: NADH Autofluoresence
+%  Update: 09/27/2021
 %  Peiyu Wang
 
 %  This is a template matlab program for data analysis.
