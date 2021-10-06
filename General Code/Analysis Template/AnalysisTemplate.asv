@@ -69,7 +69,7 @@ dataFolder = "Data";  % dataFolder: location of the folder that contains Data.
                       % dataFolder = "C:\User\20210823\Data"
                       % Please do not put anything that is not seperate filed of views in this folder
 
-NADH_dec = 2;         % The detector sequence (not the channel) for NADH. 
+NADH_dec = 1;         % The detector sequence (not the channel) for NADH. 
                       % If you don't have other detectors activated, put 1 here. 
                       % NADH_dec depends on how many detector are activated before NADH is colected.
                       % If one other detector was activated, and NADH was second detector, put 2.
@@ -96,16 +96,13 @@ total_detector = 1;   % Enter the number of detector used for the imaging settin
 
 % Mask creation settings is included in the next procedures.  
 
-mask_analyzing = 0;      %If you wish to do analysis based on generated masks, asign mask_analyzing as 1, otherwise asign as 0. 
+mask_analyzing = 1;      %If you wish to do analysis based on generated masks, asign mask_analyzing as 1, otherwise asign as 0. 
 
 %% Mask creation procedure.
 % Masking based on another input image for the same field of view
 % Only do it if you have another image collected to generate the mask.
 % If not, select 0 for all settings. Only one of the three procedures recomended here. Set zeros for others. .
-batch_threshold_mask = 0;       % Batch thresholding for creating masks
-mask_thresh = 500;            % Set to your batch masking value if batch_threshold_mask is select. Otherwise set as 0.
-
-
+batch_threshold_mask = 1;       % Batch thresholding for creating masks
 individual_threshold_mask = 0;  % individual thresholding for masks
 individual_draw_mask = 0;       % individual thresholding for masks.
 
@@ -113,7 +110,7 @@ individual_draw_mask = 0;       % individual thresholding for masks.
 %Additional Settings:
 mask_ch = 1;                 % mask_ch: The channel which is used the generate the mask
 % notice please input as the matlab order, "ch0.tif" will be input as 1.
-
+mask_thresh = 500;            % Set to your batch masking value if batch_threshold_mask is select. Otherwise set as 0.
 %%  Filtering proceure.
 %  If you want to include the filtering, assign varable as 1, if not asign as 0.
 %  Recommend to only include one, although if you want you can do both.
