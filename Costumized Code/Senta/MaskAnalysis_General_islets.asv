@@ -12,20 +12,21 @@ close all; clear all;
 addpath("Functions");
 
 DataFolder = "D:\Scotts Lab\Collaborations\For Senta\Processed Pics";
-%% Tunable Variables 
+%% Tunable variables
 mode_iter = 10;
 thresh_val = 3; 
 
-%% Predifining Variables
 
+%% Predifiniing variables. 
 condition = [];
 islet_No = [];
 individual = [];
-G_mode_mask = [];
-S_mode_mask = [];
+G_full_mode = [];
+S_full_mode = [];
 
-G_mode_full = [];
-S_mode_full = [];
+G_mask_mode = [];
+S_mask_mode = [];
+
 
 cond_folder = dir(DataFolder);
 for cond_idx = 3:numel(cond_folder)
@@ -43,64 +44,39 @@ for cond_idx = 3:numel(cond_folder)
             int = imread(fullfile(imageFile(9).folder,imageFile(9).name));
             G = standardPhase(imread(fullfile(imageFile(11).folder,imageFile(11).name)));
             S = standardPhase(imread(fullfile(imageFile(12).folder,imageFile(12).name)));
-            mask_img = imread(fullfile(data_folder,"ROI_Mask","ControlMask.tif"));  %% Change the name here to the name of the mask
+            mask_img = imread(fullfile(data_folder,"ROI_Mask","*.tif"));  %% Change the name here to the name of the mask
             
             current_struct = struct('int',int,'G',G,'S',S);
             current_struct = threshstruct(current_struct,thresh_val);
+
             [G_f,S_f] = findModePhasor(current_struct,mode_iter);
             
-            G_mode_full = cat(1,G_mode_full,G_f);
-            S_mode_full = cat(1,S_mode_full,S_f);
+            G_full_mode = cat(1,G_full_mode,G_f);
+            S_full_mode = cat(1,S_full_mode,S_f);
             
             mask_struct = maskphasorstruct(current_struct,mask_img);
             mask_struct = threshstruct(mask_struct,thresh_val);
+            
             [G_m,S_m] = findModePhasor(mask_struct,mode_iter);
             
-            G_mode_mask = cat(1,G_mode_mask,G_m);
-            S_mode_mask = cat(1,S_mode_mask,S_m);
+            G_mask_mode = cat(1,G_mask_mode,G_m);
+            S_mask_mode = cat(1,S_mask_mode,S_m);
+            
         end
     end
 end
 
-%% analysis for individuals.
-condition_names = unique(condition);
-individual_name = unique(individual);
 
-G_mode_sum_mask = [];
-S_mode_sum_mask = [];
-
-G_mode_sum_full = [];
-S_mode_sum_full = [];
-
-condition_sum = [];
-individual_sum = [];
-
-for i = 1: numel(individual_name)
-    index = find(individual == individual_name(i));
-    G_current = G_mode_mask(index);
-    S_current = G_mode_mask(index);
-    G_mode_sum_mask = cat(1,G_mode_sum_mask,mean(G_current(:)));
-    S_mode_sum_mask = cat(1,S_mode_sum_mask,mean(S_current(:)));
-    
-    G_current = G_mode_full(index);
-    S_current = S_mode_full(index);
-    G_mode_sum_full = cat(1,G_mode_sum_full,mean(G_current(:)));
-    S_mode_sum_full = cat(1,S_mode_sum_full,mean(S_current(:)));
-    
-    
-    
-    condition_sum =  cat(1,condition_sum,condition(index(1)));
-    individual_sum =  cat(1,individual_sum, individual_name(i));
-end
 %% Line Extention Metabolism for Free Precentage Calculation
-[mask_Mode_LEXT,mask_G_int,mask_S_int,mask_tao] = lineExtensionMetabolism(G_mode_sum_mask,S_mode_sum_mask);
-[full_Mode_LEXT,full_G_int,full_S_int,full_tao] = lineExtensionMetabolism(G_mode_sum_full,S_mode_sum_full);
+
+[Mask_Mode_LEXT,mask_G_int,mask_S_int,mask_tao] = lineExtensionMetabolism(G_mask_mode,S_mask_mode);
+[Full_Mode_LEXT,full_G_int,full_S_int,full_tao] = lineExtensionMetabolism(G_full_mode,S_full_mode);
 
 %%
 
-DataTable=table(condition_sum,individual_sum,mask_Mode_LEXT,full_Mode_LEXT,G_mode_sum_mask,S_mode_sum_mask,G_mode_sum_full,S_mode_sum_full...
-    ,mask_G_int,mask_S_int,mask_tao,full_G_int,full_S_int,full_tao);
-filename = 'individual.xlsx';
+DataTable=table(condition,individual,islet_No,Mask_Mode_LEXT,Full_Mode_LEXT,G_mask_mode,S_mask_mode,...
+    G_full_mode,S_full_mode,mask_G_int,mask_S_int,mask_tao,full_G_int,full_S_int,full_tao);
+filename = 'islets.xlsx';
 writetable(DataTable,filename,'Sheet',1)
 
 %% Functions
@@ -113,8 +89,6 @@ new_struct = struct('int',int,'G',G,'S',S);
 end
 
 
-
-%%
 %% Function: findModePhasor
 % Peiyu Wang
 % 11/4/2021
@@ -165,11 +139,9 @@ S_mode = S_mode/total_num;
 
 end
 
-%% Functions
+
+%% Function threshstruct: thresh_struct = threshstruct(org_struct,thresh_val)
+% Thresholding struct based on threshval inside 
 function thresh_struct = threshstruct(org_struct,thresh_val)
-thresh_struct = org_struct;
-thresh_struct.int(org_struct.int<thresh_val) = 0;
-thresh_struct.G(org_struct.int<thresh_val) = 0;
-thresh_struct.S(org_struct.int<thresh_val) = 0;
 
 end
