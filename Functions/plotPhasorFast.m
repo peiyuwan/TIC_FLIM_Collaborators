@@ -4,7 +4,7 @@
 
 function plotPhasorFast(org_ref)
 
-map_res = 1024; 
+map_res = 512; 
 phasor_his = zeros(map_res,map_res);
 
 for i = 1:size(org_ref.int,1)
@@ -28,15 +28,16 @@ colormap(gca,jet); ax = gca; ax.Colormap(1,:)= [1 1 1]; caxis('auto');
 colorbar; axis image;
 
 x_circle     = [map_res/2:map_res];
+%% y_circle_pos = map_res/2-floor(sqrt((map_res/4)^2-((x_circle-map_res/2)-map_res/
 y_circle_pos = map_res/2-floor(sqrt((map_res/4)^2-((x_circle-map_res/2)-map_res/4).^2));
 y_circle_neg = map_res/2+floor(sqrt((map_res/4)^2-((x_circle-map_res/2)-map_res/4).^2));
 hold on; plot(x_circle,[y_circle_pos;y_circle_neg],'k','LineWidth',1)
 axis([map_res/2 map_res  map_res/5  map_res/2])
-
+set(gca,'XTick',[0,0.5,1], 'YTick', [0,0.25,0.5])
 xticks([map_res/2:map_res/2^4:map_res]);
-xticklabels({'0','0.125','0.25','0.375','0.5','0.625','0.75','0.875','1'});
+xticklabels({'0','', '','','0.5','', '','','1'});
 
 yticks([0:map_res/2^4:map_res/2]);
-yticklabels({'1','0.875','0.75','0.625','0.5','0.375','0.25','0.125','0'});
+yticklabels({'0','', '0.25','','0.5'});
 xlabel('G');ylabel('S')
 end

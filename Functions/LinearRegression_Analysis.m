@@ -6,7 +6,7 @@ f = 80e6;omega = 2*f*pi;
 G_free_LT = 1/(1+(omega*NADH_free_LT/1e9)^2);
 S_free_LT = sqrt(0.25-(G_free_LT-0.5).^2);
 
-% plot(G_free_LT,S_free_LT,'bx','markersize',10,'HandleVisibility','off');
+plot(G_free_LT,S_free_LT,'bx','markersize',10,'HandleVisibility','off');
 
 G_New = G_sum - G_free_LT;
 S_New = S_sum - S_free_LT;

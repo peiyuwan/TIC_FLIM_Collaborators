@@ -3,7 +3,7 @@
 % 07/25/2019
 
 % open the phasor plot before using this; defalt map resolution is
-% 1024(corrinating with plotPhasor Fast);
+% 1024(corrinate with plotPhasor Fast);
 function plotPhasorPixel(G,S);
 map_res = 1024;
 
